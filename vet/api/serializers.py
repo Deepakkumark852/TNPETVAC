@@ -19,4 +19,16 @@ class appointmentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = appointments
         fields = '__all__'
-        
+
+class vaccinesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = vaccines
+        fields = '__all__'
+
+
+# Compare this snippet from vet/api/views.py:
+# from django.shortcuts import render
+# from django.http import HttpResponse
+# from rest_framework import viewsets
+# from .serializers import ownersSerializer, petsSerializer, appointmentsSerializer, vaccinesSerializer
+# from .models import owners, pets, appointments, vaccines

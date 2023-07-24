@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import ownersSerializer, petsSerializer , doctorsSerializer , appointmentsSerializer 
-from .models import owners, pets , doctors , appointments
+from .serializers import ownersSerializer, petsSerializer , doctorsSerializer , appointmentsSerializer , vaccinesSerializer
+from .models import owners, pets , doctors , appointments, vaccines
 
 
 @api_view(['GET'])
@@ -271,3 +271,57 @@ def appointmentDoctorPetOwnerDateStartEnd(request, pk, pk2, pk3, pk4, pk5, pk6):
     return Response(serializer.data)
 
 ######################################## vaccines api views   ###############################################
+
+@api_view(['GET'])
+def vaccineList(request):
+    vac = vaccines.objects.all()
+    serializer = vaccinesSerializer(vac, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def vaccineDetail(request, pk):
+    vac = vaccines.objects.get(id=pk)
+    serializer = vaccinesSerializer(vac, many=False)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def vaccineCreate(request):
+    serializer = vaccinesSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+def vaccineUpdate(request, pk):
+    vac = vaccines.objects.get(id=pk)
+    serializer = vaccinesSerializer(instance=vac, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+def vaccineDelete(request, pk):
+    vac = vaccines.objects.get(id=pk)
+    vac.delete()
+    return Response('Vaccine deleted')
+
+@api_view(['GET'])
+def vaccinePet(request, pk):
+    vac = vaccines.objects.get(id=pk)
+    pet = pets.objects.get(id=vac.pet_id)
+    serializer = petsSerializer(pet, many=False)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def vaccineOwner(request, pk):
+    vac = vaccines.objects.get(id=pk)
+    pet = pets.objects.get(id=vac.pet_id)
+    own = owners.objects.get(id=pet.owner_id)
+    serializer = ownersSerializer(own, many=False)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def vaccinePetList(request, pk):
+    vac = vaccines.objects.filter(pet_id=pk)
+    serializer = vaccinesSerializer(vac, many=True)
+    return Response(serializer.data)
