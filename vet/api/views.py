@@ -2,7 +2,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import ownersSerializer, petsSerializer , doctorsSerializer , appointmentsSerializer , vaccinesSerializer
 from .models import owners, pets , doctors , appointments, vaccines
-
+import geopy.distance
+from itertools import chain
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -51,6 +52,12 @@ def ownersList(request):
 @api_view(['GET'])
 def ownerDetail(request, pk):
     own = owners.objects.get(id=pk)
+    serializer = ownersSerializer(own, many=False)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def ownerAuth(request):
+    own = owners.objects.get(email=request.data['email'], password=request.data['password'])
     serializer = ownersSerializer(own, many=False)
     return Response(serializer.data)
 
@@ -133,6 +140,12 @@ def doctorDetail(request, pk):
     return Response(serializer.data)
 
 @api_view(['POST'])
+def doctorAuth(request):
+    doc = doctors.objects.get(email=request.data['email'], password=request.data['password'])
+    serializer = doctorsSerializer(doc, many=False)
+    return Response(serializer.data)
+
+@api_view(['POST'])
 def doctorCreate(request):
     serializer = doctorsSerializer(data=request.data)
     if serializer.is_valid():
@@ -152,6 +165,20 @@ def doctorDelete(request, pk):
     doc = doctors.objects.get(id=pk)
     doc.delete()
     return Response('Doctor deleted')
+
+@api_view(['GET'])
+def getDoctor(request,lat,lng):
+    doc = doctors.objects.all()
+    doc1 = []
+    for eachdoc in doc : 
+        coords_1 = (float(lat), float(lng))
+        coords_2 = tuple(float(num)  for num in eachdoc.hospital_address.strip('()').split(','))
+        if geopy.distance.geodesic(coords_1, coords_2).km < 20:
+            doc1.append(eachdoc.id)
+    doc = doctors.objects.filter(id__in=doc1)
+
+    serializer = doctorsSerializer(doc, many=True)
+    return Response(serializer.data)
 
 ######################################## appointment api views   ###############################################
 
@@ -188,6 +215,8 @@ def appointmentDelete(request, pk):
     app.delete()
     return Response('Appointment deleted')
 
+######################################## pet, owner, doctor by appointment api views   ###############################################
+
 @api_view(['GET'])
 def appointmentDoctor(request, pk):
     app = appointments.objects.get(id=pk)
@@ -209,6 +238,8 @@ def appointmentOwner(request, pk):
     own = owners.objects.get(id=pet.owner_id)
     serializer = ownersSerializer(own, many=False)
     return Response(serializer.data)
+
+######################################## appointment by pet, owner, doctor api views   ###############################################
 
 @api_view(['GET'])
 def appointmentDoctorList(request, pk):
@@ -258,15 +289,17 @@ def appointmentDoctorPetOwnerDate(request, pk, pk2, pk3, pk4):
     serializer = appointmentsSerializer(app, many=True)
     return Response(serializer.data)
 
+######################################## appointment by date api views   ###############################################
+
 @api_view(['GET'])
-def appointmentDoctorPetOwnerDateStart(request, pk, pk2, pk3, pk4, pk5):
-    app = appointments.objects.filter(doctor_id=pk, pet_id=pk2, owner_id=pk3, date=pk4, start=pk5)
+def appointmentdate(request, pk):
+    app = appointments.objects.filter(date__gte=pk)
     serializer = appointmentsSerializer(app, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
-def appointmentDoctorPetOwnerDateStartEnd(request, pk, pk2, pk3, pk4, pk5, pk6):
-    app = appointments.objects.filter(doctor_id=pk, pet_id=pk2, owner_id=pk3, date=pk4, start=pk5, end=pk6)
+def appointmentdateequal(request, pk):
+    app = appointments.objects.filter(date=pk)
     serializer = appointmentsSerializer(app, many=True)
     return Response(serializer.data)
 
