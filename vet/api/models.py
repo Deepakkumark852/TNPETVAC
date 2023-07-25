@@ -1,11 +1,12 @@
 from django.db import models
+import phonenumber_field.modelfields as phonenumber
 
 # Create your models here.
 class owners(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     address = models.CharField(max_length=200)
-    phone = models.IntegerField()
+    phone = phonenumber.PhoneNumberField(default='+91')
     email = models.CharField(max_length=200, unique=True)
     password = models.CharField(max_length=200)
     pet_id = models.IntegerField()
@@ -24,7 +25,7 @@ class pets(models.Model):
     )
     breed = models.CharField(max_length=200)
     age = models.IntegerField()
-    owner_id = models.IntegerField()
+    owner_id = models.ForeignKey(owners, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     microchip = models.IntegerField()
@@ -38,24 +39,7 @@ class pets(models.Model):
     def __str__(self):
         return str(self.id)
     
-class appointments(models.Model):
-    id = models.AutoField(primary_key=True)
-    pet_id = models.IntegerField()
-    owner_id = models.IntegerField()
-    doctor_id = models.IntegerField()
-    vaccine_id = models.IntegerField()
-    request_status =(
-        ('P','Pending'),
-        ('A','Approved'),
-        ('R','Rejected')
-    )
-    date = models.DateField()
-    time = models.TimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return str(self.id)
     
 class vaccines(models.Model):
     id = models.AutoField(primary_key=True)
@@ -76,7 +60,7 @@ class doctors(models.Model):
     id = models.AutoField(primary_key=True)
     hospital_name = models.CharField(max_length=200)
     hospital_address = models.CharField(max_length=200)
-    hospital_phone = models.IntegerField()
+    hospital_phone = phonenumber.PhoneNumberField(default='+91')
     email = models.CharField(max_length=200)
     password = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -88,6 +72,25 @@ class doctors(models.Model):
 class Invoices:
     id = models.AutoField(primary_key=True)
     appointment_id = models.IntegerField()
+
+    def __str__(self):
+        return str(self.id)
+    
+class appointments(models.Model):
+    id = models.AutoField(primary_key=True)
+    pet_id = models.ForeignKey(pets, on_delete=models.CASCADE)
+    owner_id = models.ForeignKey(owners, on_delete=models.CASCADE)
+    doctor_id = models.ForeignKey(doctors, on_delete=models.CASCADE)
+    vaccine_id = models.ForeignKey(vaccines, on_delete=models.CASCADE)
+    request_status =(
+        ('P','Pending'),
+        ('A','Approved'),
+        ('R','Rejected')
+    )
+    date = models.DateField()
+    time = models.TimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.id)

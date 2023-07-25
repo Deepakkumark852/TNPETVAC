@@ -309,9 +309,11 @@ def petUpdate(request, pk):
 
 @api_view(['DELETE'])
 def petDelete(request, pk):
-    pet = pets.objects.get(id=pk)
-    pet.delete()
-    return Response('Pet deleted')
+    if request.method == 'DELETE':
+        pet = pets.objects.get(id=pk)
+        pet.delete()
+        pet.save()
+        return Response('Pet deleted')
 
 @api_view(['GET'])
 def petOwner(request, pk):
