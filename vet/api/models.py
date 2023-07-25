@@ -6,7 +6,7 @@ class owners(models.Model):
     name = models.CharField(max_length=200)
     address = models.CharField(max_length=200)
     phone = models.IntegerField()
-    email = models.CharField(max_length=200)
+    email = models.CharField(max_length=200, unique=True)
     password = models.CharField(max_length=200)
     pet_id = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -62,6 +62,10 @@ class vaccines(models.Model):
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=200)
     week_no = models.IntegerField()
+    species =(
+        ('C','Canine'),
+        ('F','Feline')
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -38,8 +38,204 @@ def apiOverview(request):
         'body': None,
         'description': 'Deletes an owner'
         },
+        {
+        'Endpoint': '/pets/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all pets'
+        },
+        {
+        'Endpoint': '/pet/<str:pk>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a single pet'
+        },
+        {   
+        'Endpoint': '/pets/create/',
+        'method': 'POST',
+        },
+        {
+        'Endpoint': '/pets/update/<str:pk>/',
+        'method': 'PUT',
+        },
+        {
+        'Endpoint': '/pets/delete/<str:pk>/',
+        'method': 'DELETE',
+        'body': None,
+        'description': 'Deletes a pet'
+        },
+        {
+        'Endpoint': '/doctorAuth/',
+        'method': 'POST',
+        'body': {'email', 'password'},
+        'description': 'Returns a single doctor'
+        },
+        {
+        'Endpoint': '/doctors/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all doctors'
+        },
+        {
+        'Endpoint': '/doctor/<str:pk>/',    
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a single doctor'
+        },
+        {
+        'Endpoint': '/doctors/create/',
+        'method': 'POST',
+        'body': {'name', 'address', 'phone', 'email', 'password', 'hospital_address'},
+        'description': 'Creates a new doctor'
+        },
+        {
+        'Endpoint': '/doctors/update/<str:pk>/',
+        'method': 'PUT',
+        'body': {'name', 'address', 'phone', 'email', 'password', 'hospital_address'},
+        'description': 'Updates a doctor'
+        },
+        {
+        'Endpoint': '/doctors/delete/<str:pk>/',
+        'method': 'DELETE',
+        'body': None,
+        'description': 'Deletes a doctor'
+        },
+        {
+        'Endpoint': '/appointments/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments'
+        },
+        {
+        'Endpoint': '/appointment/<str:pk>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a single appointment'
+        },
+        {
+        'Endpoint': '/appointments/create/',
+        'method': 'POST',
+        'body': {'pet_id', 'owner_id', 'doctor_id', 'vaccine_id', 'request_status', 'date', 'time'},
+        'description': 'Creates a new appointment'
+        },
+        {
+        'Endpoint': '/appointments/update/<str:pk>/',
+        'method': 'PUT',
+        'body': {'pet_id', 'owner_id', 'doctor_id', 'vaccine_id', 'request_status', 'date', 'time'},
+        'description': 'Updates an appointment'
+        },
+        {
+        'Endpoint': '/appointments/delete/<str:pk>/',
+        'method': 'DELETE',
+        'body': None,
+        'description': 'Deletes an appointment'
+        },
+        {
+        'Endpoint': '/appointmentdocotorlist/<str:doctor>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by doctor'
+        },
+        {
+        'Endpoint': '/appointmentpetlist/<str:pet>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by pet'
+        },
+        {
+        'Endpoint': '/appointmentownerlist/<str:owner>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by owner'
+        },
+        {
+        'Endpoint': '/appointmentdoctorpet/<str:doctor>/<str:pet>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by doctor and pet'
+        },
+        {
+        'Endpoint': '/appointmentdoctorowner/<str:doctor>/<str:owner>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by doctor and owner'
+        },
+        {
+        'Endpoint': '/appointmentpetowner/<str:pet>/<str:owner>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by pet and owner'
+        },
+        {
+        'Endpoint': '/appointmentpetownerdoctor/<str:doctor>/<str:pet>/<str:owner>',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by doctor, pet and owner'
+        },
+        {
+        'Endpoint': '/appointmentowner/<str:owner>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by owner'
+        },
+        {
+        'Endpoint': '/appointmentdoctor/<str:doctor>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by doctor'
+        },
+        {
+        'Endpoint': '/appointmentpet/<str:pet>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by pet'
+        },
+        {
+        'Endpoint': '/appointmentdate/<str:date>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by date'
+        },
+        {
+        'Endpoint': '/appointmentdateequal/<str:date>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all appointments by date'
+        },
+        {
+        'Endpoint': '/vaccines/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a list of all vaccines'
+        },
+        {
+        'Endpoint': '/vaccine/<str:pk>/',
+        'method': 'GET',
+        'body': None,
+        'description': 'Returns a single vaccine'
+        },
+        {
+        'Endpoint': '/vaccines/create/',
+        'method': 'POST',
+        'body': {'name', 'description', 'week_no'},
+        'description': 'Creates a new vaccine'
+        },
+        {
+        'Endpoint': '/vaccines/update/<str:pk>/',
+        'method': 'PUT',
+        'body': {'name', 'description', 'week_no'},
+        'description': 'Updates a vaccine'
+        },
+        {
+        'Endpoint': '/vaccines/delete/<str:pk>/',
+        'method': 'DELETE',
+        'body': None,
+        'description': 'Deletes a vaccine'
+        }
     ]
     return Response(routes)
+
+
 
 ###################### owners api views ######################
 
