@@ -5,6 +5,7 @@ class ownersSerializer(serializers.ModelSerializer):
     class Meta:
         model = owners
         fields = '__all__'
+        
 class petsSerializer(serializers.ModelSerializer):
     class Meta:
         model = pets

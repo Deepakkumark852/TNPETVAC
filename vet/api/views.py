@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from .serializers import ownersSerializer, petsSerializer , doctorsSerializer , appointmentsSerializer , vaccinesSerializer
 from .models import owners, pets , doctors , appointments, vaccines
 import geopy.distance
-from itertools import chain
+from django.contrib.auth.hashers import make_password, check_password
+import jwt
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -246,22 +247,30 @@ def ownersList(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-def ownerDetail(request, pk):
+def ownerDetail(request, pk):   
     own = owners.objects.get(id=pk)
     serializer = ownersSerializer(own, many=False)
     return Response(serializer.data)
 
 @api_view(['POST'])
 def ownerAuth(request):
-    own = owners.objects.get(email=request.data['email'], password=request.data['password'])
-    serializer = ownersSerializer(own, many=False)
-    return Response(serializer.data)
+    own = owners.objects.get(email=request.data['email'])
+    if check_password(request.data['password'], own.password):
+        serializer = ownersSerializer(own, many=False)
+        token = jwt.encode(serializer.data,key='secret',algorithm='HS256')
+        return Response(token)
+    else:
+        return Response(serializer.errors)
 
 @api_view(['POST'])
 def ownerCreate(request):
-    serializer = ownersSerializer(data=request.data)
+    datar = request.data.copy()
+    datar['password'] = make_password(datar['password'])
+    serializer = ownersSerializer(data=datar)
     if serializer.is_valid():
         serializer.save()
+    if serializer.errors:
+        return Response(serializer.errors)
     return Response(serializer.data)
 
 @api_view(['PUT'])
@@ -347,6 +356,7 @@ def doctorAuth(request):
 def doctorCreate(request):
     serializer = doctorsSerializer(data=request.data)
     if serializer.is_valid():
+        serializer.data['password'] = make_password(serializer.data['password'])
         serializer.save()
     return Response(serializer.data)
 
