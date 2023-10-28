@@ -279,6 +279,8 @@ def ownerUpdate(request, pk):
     serializer = ownersSerializer(instance=own, data=request.data)
     if serializer.is_valid():
         serializer.save()
+    if serializer.errors:
+        return Response(serializer.errors)
     return Response(serializer.data)
 
 @api_view(['DELETE'])
@@ -306,6 +308,8 @@ def petCreate(request):
     serializer = petsSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
+    if serializer.errors:
+        return Response(serializer.errors)
     return Response(serializer.data)
 
 @api_view(['PUT'])
@@ -314,6 +318,8 @@ def petUpdate(request, pk):
     serializer = petsSerializer(instance=pet, data=request.data)
     if serializer.is_valid():
         serializer.save()
+    if serializer.errors:
+        return Response(serializer.errors)
     return Response(serializer.data)
 
 @api_view(['DELETE'])
@@ -366,6 +372,8 @@ def doctorUpdate(request, pk):
     serializer = doctorsSerializer(instance=doc, data=request.data)
     if serializer.is_valid():
         serializer.save()
+    if serializer.errors:
+        return Response(serializer.errors)
     return Response(serializer.data)
 
 @api_view(['DELETE'])
@@ -407,6 +415,8 @@ def appointmentCreate(request):
     serializer = appointmentsSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
+    if serializer.errors:
+        return Response(serializer.errors)
     return Response(serializer.data)
 
 @api_view(['PUT'])
@@ -415,6 +425,8 @@ def appointmentUpdate(request, pk):
     serializer = appointmentsSerializer(instance=app, data=request.data)
     if serializer.is_valid():
         serializer.save()
+    if serializer.errors:
+        return Response(serializer.errors)
     return Response(serializer.data)
 
 @api_view(['DELETE'])
@@ -530,6 +542,8 @@ def vaccineCreate(request):
     serializer = vaccinesSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
+    if serializer.errors:
+        return Response(serializer.errors)
     return Response(serializer.data)
 
 @api_view(['PUT'])
@@ -538,6 +552,8 @@ def vaccineUpdate(request, pk):
     serializer = vaccinesSerializer(instance=vac, data=request.data)
     if serializer.is_valid():
         serializer.save()
+    if serializer.errors:
+        return Response(serializer.errors)
     return Response(serializer.data)
 
 @api_view(['DELETE'])
