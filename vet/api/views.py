@@ -1,10 +1,14 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
 from .serializers import ownersSerializer, petsSerializer , doctorsSerializer , appointmentsSerializer , vaccinesSerializer
 from .models import owners, pets , doctors , appointments, vaccines
 import geopy.distance
 from django.contrib.auth.hashers import make_password, check_password
 import jwt
+import datetime
+from .configs import *
+from django.http import JsonResponse
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -237,16 +241,90 @@ def apiOverview(request):
     return Response(routes)
 
 
+def token_required(func):
+    def wrapper(request, *args, **kwargs):
+        auth_headers = request.headers.get('Authorization', '').split()
+        invalid_msg = {
+            'message':'Invalid token. Registration and / or authentication required for login',
+            'authenticated':False
+        }
+        expired_msg = {
+            'message':'Expired token. Reauthentication required.',
+            'authenticated':False
+        }
+
+        if len(auth_headers) != 2:
+            return JsonResponse(invalid_msg), 401
+
+        try:
+            token = auth_headers[1]
+            print("token:" , token)
+            data = jwt.decode(token,secret_key,algorithms=['HS256'])
+            print("data:" , data)
+            user = owners.objects.get(id = data['id'])
+            if not user:
+                raise RuntimeError('User not found')
+            return func(request, *args, **kwargs)
+        except jwt.ExpiredSignatureError:
+            return JsonResponse(expired_msg),401
+        except (jwt.InvalidTokenError,Exception) as e:
+            print(e)
+    return wrapper
+
+def access_level_required(accesslevel):
+    def decorator(func):
+        def wrapper(request, *args, **kwargs):
+            auth_headers = request.headers.get('Authorization', '').split()
+            invalid_msg = {
+                'message':'Invalid token. Registration and / or authentication required for login',
+                'authenticated':False
+            }
+            expired_msg = {
+                'message':'Expired token. Reauthentication required.',
+                'authenticated':False
+            }
+
+            if len(auth_headers) != 2:
+                return JsonResponse(invalid_msg), 401
+
+            try:
+                token = auth_headers[1]
+                print("token:" , token)
+                data = jwt.decode(token,secret_key,algorithms=['HS256'])
+                print("data:" , data)
+                if data['access_level'] in accesslevel:
+                    return func(request, *args, **kwargs)
+                else:   
+                    return JsonResponse(invalid_msg), 401
+            except jwt.ExpiredSignatureError:
+                return JsonResponse(expired_msg),401
+            except (jwt.InvalidTokenError,Exception) as e:
+                print(e)
+        return wrapper
+    return decorator
+
+def get_user(request):
+    token = request.headers['Authorization']
+    data = jwt.decode(token, secret_key , algorithms=['HS256'])
+    return data['user']
+
+
+
 
 ###################### owners api views ######################
 
 @api_view(['GET'])
+@token_required
+@access_level_required([796])
 def ownersList(request):
     own = owners.objects.all()
     serializer = ownersSerializer(own, many=True)
     return Response(serializer.data)
 
+
 @api_view(['GET'])
+@token_required
+@access_level_required([1])
 def ownerDetail(request, pk):   
     own = owners.objects.get(id=pk)
     serializer = ownersSerializer(own, many=False)
@@ -254,13 +332,18 @@ def ownerDetail(request, pk):
 
 @api_view(['POST'])
 def ownerAuth(request):
-    own = owners.objects.get(email=request.data['email'])
-    if check_password(request.data['password'], own.password):
-        serializer = ownersSerializer(own, many=False)
-        token = jwt.encode(serializer.data,key='secret',algorithm='HS256')
-        return Response(token)
-    else:
-        return Response(serializer.errors)
+    # try:
+        own = owners.objects.get(email=request.data['email'])
+        if check_password(request.data['password'], own.password):
+            serialize = ownersSerializer(own, many=False).data
+            serialize['exp_time']= (datetime.datetime.utcnow() + datetime.timedelta(minutes=60)).isoformat()
+            serialize['access_level'] = 1
+            token = jwt.encode(serialize,key=secret_key ,algorithm='HS256')
+            return Response(token)
+        else:
+            return Response("Invalid password", status=401)
+    # except:
+        # return Response("Invalid email", status=401)
 
 @api_view(['POST'])
 def ownerCreate(request):
@@ -274,6 +357,8 @@ def ownerCreate(request):
     return Response(serializer.data)
 
 @api_view(['PUT'])
+@token_required
+@access_level_required([1])
 def ownerUpdate(request, pk):
     own = owners.objects.get(id=pk)
     serializer = ownersSerializer(instance=own, data=request.data)
@@ -284,6 +369,8 @@ def ownerUpdate(request, pk):
     return Response(serializer.data)
 
 @api_view(['DELETE'])
+@token_required
+@access_level_required([1])
 def ownerDelete(request, pk):
     own = owners.objects.get(id=pk)
     own.delete()
@@ -292,18 +379,38 @@ def ownerDelete(request, pk):
 
 ######################################## pets api views   ###############################################
 @api_view(['GET'])
+@token_required
+@access_level_required([796])
 def petsList(request):
     pet = pets.objects.all()
     serializer = petsSerializer(pet, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
+@token_required
+@access_level_required([1,2])
+def petsListOwner(request, pk):
+    petlist = []
+    pet = pets.objects.filter(owner_id=pk)
+    for eachpet in pet:
+        appointment = appointments.objects.filter(pet_id=eachpet.id)
+        eachpetdict = petsSerializer(eachpet, many=False).data
+        eachpetdict['appointment'] = appointmentsSerializer(appointment, many=True).data
+        petlist.append(eachpetdict)
+    print(petlist)
+    return Response(petlist)
+
+@api_view(['GET'])
+@token_required
+@access_level_required([1,2])
 def petDetail(request, pk):
     pet = pets.objects.get(id=pk)
     serializer = petsSerializer(pet, many=False)
     return Response(serializer.data)
 
 @api_view(['POST'])
+@token_required
+@access_level_required([1])
 def petCreate(request):
     serializer = petsSerializer(data=request.data)
     if serializer.is_valid():
@@ -313,6 +420,8 @@ def petCreate(request):
     return Response(serializer.data)
 
 @api_view(['PUT'])
+@token_required
+@access_level_required([1])
 def petUpdate(request, pk):
     pet = pets.objects.get(id=pk)
     serializer = petsSerializer(instance=pet, data=request.data)
@@ -323,6 +432,8 @@ def petUpdate(request, pk):
     return Response(serializer.data)
 
 @api_view(['DELETE'])
+@token_required
+@access_level_required([1])
 def petDelete(request, pk):
     if request.method == 'DELETE':
         pet = pets.objects.get(id=pk)
@@ -331,6 +442,8 @@ def petDelete(request, pk):
         return Response('Pet deleted')
 
 @api_view(['GET'])
+@token_required
+@access_level_required([2])
 def petOwner(request, pk):
     pet = pets.objects.get(id=pk)
     own = owners.objects.get(id=pet.owner_id)
@@ -341,12 +454,16 @@ def petOwner(request, pk):
 ######################################## doctor api views   ###############################################
 
 @api_view(['GET'])
+@token_required
+@access_level_required([796])
 def doctorList(request):
     doc = doctors.objects.all()
     serializer = doctorsSerializer(doc, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
+@token_required
+@access_level_required([2])
 def doctorDetail(request, pk):
     doc = doctors.objects.get(id=pk)
     serializer = doctorsSerializer(doc, many=False)
@@ -354,9 +471,15 @@ def doctorDetail(request, pk):
 
 @api_view(['POST'])
 def doctorAuth(request):
-    doc = doctors.objects.get(email=request.data['email'], password=request.data['password'])
-    serializer = doctorsSerializer(doc, many=False)
-    return Response(serializer.data)
+    doc = doctors.objects.get(email=request.data['email'])
+    if check_password(request.data['password'], doc.password):
+        serializer = doctorsSerializer(doc, many=False).data
+        serializer['exp_time']= datetime.datetime.utcnow() + datetime.timedelta(minutes=60).isoformat()
+        serializer['access_level'] = 2
+        token = jwt.encode(serializer,key=secret_key,algorithm='HS256')
+        return Response(token)
+    else:
+        return Response(serializer.errors)
 
 @api_view(['POST'])
 def doctorCreate(request):
@@ -367,6 +490,8 @@ def doctorCreate(request):
     return Response(serializer.data)
 
 @api_view(['PUT'])
+@token_required
+@access_level_required([2])
 def doctorUpdate(request, pk):
     doc = doctors.objects.get(id=pk)
     serializer = doctorsSerializer(instance=doc, data=request.data)
@@ -377,12 +502,16 @@ def doctorUpdate(request, pk):
     return Response(serializer.data)
 
 @api_view(['DELETE'])
+@token_required
+@access_level_required([2])
 def doctorDelete(request, pk):
     doc = doctors.objects.get(id=pk)
     doc.delete()
     return Response('Doctor deleted')
 
 @api_view(['GET'])
+@token_required
+@access_level_required([1])
 def getDoctor(request,lat,lng):
     doc = doctors.objects.all()
     doc1 = []
@@ -399,18 +528,24 @@ def getDoctor(request,lat,lng):
 ######################################## appointment api views   ###############################################
 
 @api_view(['GET'])
+@token_required
+@access_level_required([796])
 def appointmentList(request):
     app = appointments.objects.all()
     serializer = appointmentsSerializer(app, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
+@token_required
+@access_level_required([1,2])
 def appointmentDetail(request, pk):
     app = appointments.objects.get(id=pk)
     serializer = appointmentsSerializer(app, many=False)
     return Response(serializer.data)
 
 @api_view(['POST'])
+@token_required
+@access_level_required([1])
 def appointmentCreate(request):
     serializer = appointmentsSerializer(data=request.data)
     if serializer.is_valid():
@@ -420,6 +555,8 @@ def appointmentCreate(request):
     return Response(serializer.data)
 
 @api_view(['PUT'])
+@token_required
+@access_level_required([1,2])
 def appointmentUpdate(request, pk):
     app = appointments.objects.get(id=pk)
     serializer = appointmentsSerializer(instance=app, data=request.data)
@@ -430,6 +567,8 @@ def appointmentUpdate(request, pk):
     return Response(serializer.data)
 
 @api_view(['DELETE'])
+@token_required
+@access_level_required([1])
 def appointmentDelete(request, pk):
     app = appointments.objects.get(id=pk)
     app.delete()
@@ -438,6 +577,8 @@ def appointmentDelete(request, pk):
 ######################################## pet, owner, doctor by appointment api views   ###############################################
 
 @api_view(['GET'])
+@token_required
+@access_level_required([2])
 def appointmentDoctor(request, pk):
     app = appointments.objects.get(id=pk)
     doc = doctors.objects.get(id=app.doctor_id)
@@ -445,6 +586,8 @@ def appointmentDoctor(request, pk):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@token_required
+@access_level_required([1])
 def appointmentPet(request, pk):
     app = appointments.objects.get(id=pk)
     pet = pets.objects.get(id=app.pet_id)
@@ -452,6 +595,8 @@ def appointmentPet(request, pk):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@token_required
+@access_level_required([1])
 def appointmentOwner(request, pk):
     app = appointments.objects.get(id=pk)
     pet = pets.objects.get(id=app.pet_id)

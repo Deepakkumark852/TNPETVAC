@@ -12,6 +12,7 @@ urlpatterns = [
     path('owners/delete/<str:pk>/', views.ownerDelete),
     # pets
     path('pets/', views.petsList),
+    path('petsbyowner/<str:pk>/', views.petsListOwner),
     path('pet/<str:pk>/', views.petDetail),
     path('pets/create/', views.petCreate),
     path('pets/update/<str:pk>/', views.petUpdate),
