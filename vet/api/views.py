@@ -15,12 +15,14 @@ def apiOverview(request):
     routes = [
         {
         'Endpoint': '/owners/',
+        'Access Level': '796',
         'method': 'GET',
         'body': None,
         'description': 'Returns a list of all owners'
         },
         {
         'Endpoint': '/owners/<str:pk>/',
+        'Acess Level': '1',
         'method': 'GET',
         'body': None,
         'description': 'Returns a single owner'
@@ -33,38 +35,45 @@ def apiOverview(request):
         },
         {
         'Endpoint': '/owners/update/<str:pk>/',
+        'Acess Level': '1',
         'method': 'PUT',
         'body': {'name', 'address', 'phone', 'email', 'password', 'pet_id'},
         'description': 'Updates an owner'
         },
         {
         'Endpoint': '/owners/delete/<str:pk>/',
+        'Acess Level': '1',
         'method': 'DELETE',
         'body': None,
         'description': 'Deletes an owner'
         },
         {
         'Endpoint': '/pets/',
+        'Acess Level': '796',
         'method': 'GET',
         'body': None,
         'description': 'Returns a list of all pets'
         },
         {
         'Endpoint': '/pet/<str:pk>/',
+        'Acess Level': '1',
         'method': 'GET',
         'body': None,
         'description': 'Returns a single pet'
         },
         {   
         'Endpoint': '/pets/create/',
+        'Acess Level': '1',
         'method': 'POST',
         },
         {
         'Endpoint': '/pets/update/<str:pk>/',
+        'Acess Level': '1',
         'method': 'PUT',
         },
         {
         'Endpoint': '/pets/delete/<str:pk>/',
+        'Acess Level': '1',
         'method': 'DELETE',
         'body': None,
         'description': 'Deletes a pet'
@@ -77,12 +86,14 @@ def apiOverview(request):
         },
         {
         'Endpoint': '/doctors/',
+        'Acess Level': '796',
         'method': 'GET',
         'body': None,
         'description': 'Returns a list of all doctors'
         },
         {
         'Endpoint': '/doctor/<str:pk>/',    
+        'Acess Level': '2',
         'method': 'GET',
         'body': None,
         'description': 'Returns a single doctor'
@@ -95,66 +106,77 @@ def apiOverview(request):
         },
         {
         'Endpoint': '/doctors/update/<str:pk>/',
+        'Acess Level': '2',
         'method': 'PUT',
         'body': {'name', 'address', 'phone', 'email', 'password', 'hospital_address'},
         'description': 'Updates a doctor'
         },
         {
         'Endpoint': '/doctors/delete/<str:pk>/',
+        'Acess Level': '2',
         'method': 'DELETE',
         'body': None,
         'description': 'Deletes a doctor'
         },
         {
         'Endpoint': '/appointments/',
+        'Acess Level': '796',
         'method': 'GET',
         'body': None,
         'description': 'Returns a list of all appointments'
         },
         {
         'Endpoint': '/appointment/<str:pk>/',
+        'Acess Level': '1',
         'method': 'GET',
         'body': None,
         'description': 'Returns a single appointment'
         },
         {
         'Endpoint': '/appointments/create/',
+        'Acess Level': '1',
         'method': 'POST',
         'body': {'pet_id', 'owner_id', 'doctor_id', 'vaccine_id', 'request_status', 'date', 'time'},
         'description': 'Creates a new appointment'
         },
         {
         'Endpoint': '/appointments/update/<str:pk>/',
+        'Acess Level': '1',
         'method': 'PUT',
         'body': {'pet_id', 'owner_id', 'doctor_id', 'vaccine_id', 'request_status', 'date', 'time'},
         'description': 'Updates an appointment'
         },
         {
         'Endpoint': '/appointments/delete/<str:pk>/',
+        'Acess Level': '1',
         'method': 'DELETE',
         'body': None,
         'description': 'Deletes an appointment'
         },
         {
         'Endpoint': '/appointmentdocotorlist/<str:doctor>/',
+        'Acess Level': '2',
         'method': 'GET',
         'body': None,
         'description': 'Returns a list of all appointments by doctor'
         },
         {
         'Endpoint': '/appointmentpetlist/<str:pet>/',
+        'Acess Level': '1',
         'method': 'GET',
         'body': None,
         'description': 'Returns a list of all appointments by pet'
         },
         {
         'Endpoint': '/appointmentownerlist/<str:owner>/',
+        'Acess Level': '1',
         'method': 'GET',
         'body': None,
         'description': 'Returns a list of all appointments by owner'
         },
         {
         'Endpoint': '/appointmentdoctorpet/<str:doctor>/<str:pet>/',
+        'Acess Level': '1',
         'method': 'GET',
         'body': None,
         'description': 'Returns a list of all appointments by doctor and pet'
