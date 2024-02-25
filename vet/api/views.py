@@ -496,7 +496,7 @@ def doctorAuth(request):
     doc = doctors.objects.get(email=request.data['email'])
     if check_password(request.data['password'], doc.password):
         serializer = doctorsSerializer(doc, many=False).data
-        serializer['exp_time']= datetime.datetime.utcnow() + datetime.timedelta(minutes=60).isoformat()
+        serializer['exp_time']= (datetime.datetime.utcnow() + datetime.timedelta(minutes=60)).isoformat()
         serializer['access_level'] = 2
         token = jwt.encode(serializer,key=secret_key,algorithm='HS256')
         return Response(token)
@@ -505,9 +505,10 @@ def doctorAuth(request):
 
 @api_view(['POST'])
 def doctorCreate(request):
-    serializer = doctorsSerializer(data=request.data)
+    datar = request.data.copy()
+    datar['password'] = make_password(datar['password'])
+    serializer = doctorsSerializer(data=datar)
     if serializer.is_valid():
-        serializer.data['password'] = make_password(serializer.data['password'])
         serializer.save()
     return Response(serializer.data)
 
